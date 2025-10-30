@@ -141,5 +141,60 @@ if st.button("Generate Poster"):
 st.sidebar.header("Current Palette (CSV)")
 if st.sidebar.button("Show Palette Preview"):
     show_palette(palette_csv)
+# ==============================================================
+# 🎨 Palette Manager (CSV CRUD)
+# ==============================================================
+
+st.sidebar.header("🎨 Palette Manager")
+
+# --- READ ---
+if st.sidebar.checkbox("Show Current Palette Data"):
+    st.write("### Current Palette Data")
+    df_palette = read_palette()
+    st.dataframe(df_palette)
+
+# --- CREATE ---
+st.write("### ➕ Add New Color")
+new_name = st.text_input("Color Name")
+col1, col2, col3 = st.columns(3)
+with col1:
+    r_new = st.number_input("R (0-1)", 0.0, 1.0, 0.5, 0.01)
+with col2:
+    g_new = st.number_input("G (0-1)", 0.0, 1.0, 0.5, 0.01)
+with col3:
+    b_new = st.number_input("B (0-1)", 0.0, 1.0, 0.5, 0.01)
+
+if st.button("Add Color to Palette"):
+    if new_name.strip():
+        add_color(new_name.strip(), r_new, g_new, b_new)
+        st.success(f"✅ Added '{new_name}' to palette.")
+    else:
+        st.warning("Please enter a valid color name.")
+
+# --- UPDATE ---
+st.write("### ✏️ Update Existing Color")
+df = read_palette()
+if len(df) > 0:
+    color_to_update = st.selectbox("Select color to update", df["name"].tolist())
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        r_upd = st.number_input("New R (0-1)", 0.0, 1.0, float(df[df["name"]==color_to_update]["r"].iloc[0]), 0.01)
+    with col2:
+        g_upd = st.number_input("New G (0-1)", 0.0, 1.0, float(df[df["name"]==color_to_update]["g"].iloc[0]), 0.01)
+    with col3:
+        b_upd = st.number_input("New B (0-1)", 0.0, 1.0, float(df[df["name"]==color_to_update]["b"].iloc[0]), 0.01)
+
+    if st.button("Update Color"):
+        update_color(color_to_update, r_upd, g_upd, b_upd)
+        st.success(f"✅ Updated '{color_to_update}' successfully!")
+
+# --- DELETE ---
+st.write("### ❌ Delete a Color")
+if len(df) > 0:
+    color_to_delete = st.selectbox("Select color to delete", df["name"].tolist(), key="delete_color")
+    if st.button("Delete Selected Color"):
+        delete_color(color_to_delete)
+        st.error(f"🗑️ Deleted '{color_to_delete}' from palette.")
+
 
 st.caption("Built from original Colab notebook — powered by Streamlit 🎈")
